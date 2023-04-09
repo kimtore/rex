@@ -56,7 +56,7 @@ func main() {
 		}
 		probe, err := mediascanner.ProbeMetadata(context.TODO(), path)
 		if err != nil {
-			return nil
+			return err
 		}
 		fmt.Fprintf(os.Stderr, "Add %q\n", path)
 		t := mediascanner.TrackFromFile(lib, path, *probe)
