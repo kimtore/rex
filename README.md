@@ -23,9 +23,11 @@ might be of particular interest.
 
 Many tests are broken, they might not be relevant.
 
-## Tools and development
+## Usage
 
 This software has been tested successfully with Go 1.20.
+
+Install [ffmpeg](https://ffmpeg.org/) first if you want to generate PDB files.
 
 Use [REX](cmd/rex/main.go) to generate PDB files:
 ```
