@@ -43,8 +43,6 @@ CREATE TABLE library(
   replaygain_peak REAL,
   tracktotal TEXT,
   color INTEGER,
-  coverart_color INTEGER,
-  coverart_digest BLOB,
   last_played_at DATETIME,
   source_synchronized_ms INTEGER
 );

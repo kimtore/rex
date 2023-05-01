@@ -67,8 +67,6 @@ type Library struct {
 	ReplaygainPeak       sql.NullFloat64
 	Tracktotal           sql.NullString
 	Color                sql.NullInt64
-	CoverartColor        sql.NullInt64
-	CoverartDigest       []byte
 	LastPlayedAt         sql.NullTime
 	SourceSynchronizedMs sql.NullInt64
 }

@@ -164,7 +164,7 @@ func (q *Queries) ListPlaylists(ctx context.Context) ([]Playlist, error) {
 }
 
 const listTracks = `-- name: ListTracks :many
-SELECT library.id, library.artist, library.title, library.album, library.year, library.genre, library.tracknumber, library.location, library.comment, library.url, library.duration, library.bitrate, library.samplerate, library.cuepoint, library.bpm, library.wavesummaryhex, library.channels, library.datetime_added, library.mixxx_deleted, library.played, library.header_parsed, library.filetype, library.replaygain, library.timesplayed, library.rating, library."key", library.beats, library.beats_version, library.composer, library.bpm_lock, library.beats_sub_version, library.keys, library.keys_version, library.keys_sub_version, library.key_id, library.grouping, library.album_artist, library.coverart_source, library.coverart_type, library.coverart_location, library.coverart_hash, library.replaygain_peak, library.tracktotal, library.color, library.coverart_color, library.coverart_digest, library.last_played_at, library.source_synchronized_ms, tl.location AS path, tl.filesize AS filesize
+SELECT library.id, library.artist, library.title, library.album, library.year, library.genre, library.tracknumber, library.location, library.comment, library.url, library.duration, library.bitrate, library.samplerate, library.cuepoint, library.bpm, library.wavesummaryhex, library.channels, library.datetime_added, library.mixxx_deleted, library.played, library.header_parsed, library.filetype, library.replaygain, library.timesplayed, library.rating, library."key", library.beats, library.beats_version, library.composer, library.bpm_lock, library.beats_sub_version, library.keys, library.keys_version, library.keys_sub_version, library.key_id, library.grouping, library.album_artist, library.coverart_source, library.coverart_type, library.coverart_location, library.coverart_hash, library.replaygain_peak, library.tracktotal, library.color, library.last_played_at, library.source_synchronized_ms, tl.location AS path, tl.filesize AS filesize
 FROM library
 JOIN track_locations tl on library.location = tl.id
 ORDER BY library.id
@@ -215,8 +215,6 @@ type ListTracksRow struct {
 	ReplaygainPeak       sql.NullFloat64
 	Tracktotal           sql.NullString
 	Color                sql.NullInt64
-	CoverartColor        sql.NullInt64
-	CoverartDigest       []byte
 	LastPlayedAt         sql.NullTime
 	SourceSynchronizedMs sql.NullInt64
 	Path                 sql.NullString
@@ -277,8 +275,6 @@ func (q *Queries) ListTracks(ctx context.Context) ([]ListTracksRow, error) {
 			&i.ReplaygainPeak,
 			&i.Tracktotal,
 			&i.Color,
-			&i.CoverartColor,
-			&i.CoverartDigest,
 			&i.LastPlayedAt,
 			&i.SourceSynchronizedMs,
 			&i.Path,
