@@ -97,27 +97,8 @@ func run() error {
 	defer out.Close()
 	fmt.Printf("PIONEER database created: %s\n", outputFile)
 
-<<<<<<< HEAD
-	// Traverse directories and scan for music
-	walk := func(path string, info fs.FileInfo, err error) error {
-		if info.IsDir() {
-			return nil
-		}
-		probe, err := mediascanner.ProbeMetadata(context.TODO(), path)
-		if err != nil {
-			return err
-		}
-		fmt.Fprintf(os.Stderr, "Add %q\n", path)
-		t := mediascanner.TrackFromFile(lib, path, *probe)
-		lib.InsertTrack(t)
-		return nil
-	}
-
-	err = filepath.Walk(*scandir, walk)
-=======
 	// Scan Mixxx library for tracks
 	srcTracks, err := mixxxdb.ListTracks(ctx)
->>>>>>> fd915f2 (Mixxx database conversion)
 	if err != nil {
 		return err
 	}
