@@ -5,6 +5,9 @@ package mediascanner
 import (
 	`context`
 	`encoding/json`
+	`fmt`
+	`io`
+	`os`
 	`os/exec`
 	`path/filepath`
 	`strconv`
@@ -12,6 +15,7 @@ import (
 	`time`
 
 	`github.com/ambientsound/rex/pkg/library`
+	`github.com/ambientsound/rex/pkg/mixxx`
 	`github.com/ambientsound/rex/pkg/rekordbox/album`
 	`github.com/ambientsound/rex/pkg/rekordbox/artist`
 	`github.com/ambientsound/rex/pkg/rekordbox/track`
@@ -81,7 +85,100 @@ func yearOrZero(tm *time.Time) uint16 {
 	return uint16(tm.Year())
 }
 
+func TrackFromMixxx(track mixxx.ListTracksRow) *library.Track {
+	trackNumber, _ := strconv.Atoi(track.Tracknumber.String)
+	return &library.Track{
+		Path:        track.Path.String,
+		Title:       track.Title.String,
+		SampleRate:  float64(track.Samplerate.Int64),
+		FileSize:    int(track.Filesize.Int64),
+		Bitrate:     int(track.Bitrate.Int64),
+		TrackNumber: trackNumber,
+		Tempo:       track.Bpm.Float64,
+		FileType:    track.Filetype.String,
+		AddedDate:   detectDate(track.DatetimeAdded.String),
+		Duration:    time.Duration(track.Duration.Float64),
+		Artist:      track.Artist.String,
+		Album:       track.Album.String,
+		// SampleDepth
+		// DiscNumber
+		// ReleaseDate
+		// Isrc
+	}
+}
+
+type RenderResult struct {
+	Action string
+}
+
+func RenderTo(ctx context.Context, t *library.Track, outputDir string) (*RenderResult, error) {
+	{
+		filename := filepath.Base(t.Path)
+		outputPath := filepath.Join(outputDir, filename)
+
+		if t.FileType != "mp3" {
+			outputPath += ".mp3"
+		}
+		t.OutputPath = outputPath
+	}
+
+	_, err := os.Stat(t.OutputPath)
+	if err == nil {
+		return &RenderResult{Action: "skip"}, nil
+	} else if !os.IsNotExist(err) {
+		return nil, err
+	}
+
+	switch t.FileType {
+	case "mp3":
+		err = CopyFile(t.Path, t.OutputPath)
+		return &RenderResult{Action: "copy"}, err
+	default:
+		err = ConvertToMP3(ctx, t.Path, t.OutputPath)
+		return &RenderResult{Action: "encode"}, err
+	}
+}
+
+func ConvertToMP3(ctx context.Context, src, dst string) error {
+	proc := exec.CommandContext(ctx, "ffmpeg",
+		"-i", src,
+		"-map_metadata", "0",
+		"-codec:a", "libmp3lame",
+		"-qscale:a", "0",
+		"-joint_stereo", "0",
+		dst,
+	)
+	out, err := proc.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("%w\n%s", err, string(out))
+	}
+	return nil
+}
+
+func CopyFile(inputPath, outputPath string) error {
+	in, err := os.Open(inputPath)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	out, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, in)
+
+	if err != nil {
+		os.Remove(out.Name())
+	}
+
+	return err
+}
+
 func TrackFromFile(lib *library.Library, path string, probe Probe) *library.Track {
+	now := time.Now()
 	return &library.Track{
 		Path:        path,
 		Bitrate:     320,   // FIXME
@@ -93,9 +190,9 @@ func TrackFromFile(lib *library.Library, path string, probe Probe) *library.Trac
 		FileSize:    intOrZero[int](probe.Format.Filesize),
 		TrackNumber: intOrZero[int](probe.Format.Tags.TrackNumber),
 		ReleaseDate: detectDate(probe.Format.Tags.Date),
-		AddedDate:   time.Now(),
-		Artist:      lib.Artist(probe.Format.Tags.Artist),
-		Album:       lib.Album(probe.Format.Tags.Album),
+		AddedDate:   &now,
+		Artist:      probe.Format.Tags.Artist,
+		Album:       probe.Format.Tags.Album,
 		Duration:    parseDuration(probe.Format.Duration),
 		Title:       probe.Format.Tags.Title,
 	}
@@ -104,6 +201,10 @@ func TrackFromFile(lib *library.Library, path string, probe Probe) *library.Trac
 func PdbTrack(lib *library.Library, t *library.Track, baseDir string) track.Track {
 	const isoDateFormat = "2006-01-02"
 	baseDir = strings.TrimRight(baseDir, "/")
+	filePath := t.OutputPath
+	if strings.HasPrefix(filePath, baseDir) {
+		filePath = filePath[len(baseDir):]
+	}
 
 	return track.Track{
 		Header: track.Header{
@@ -114,14 +215,14 @@ func PdbTrack(lib *library.Library, t *library.Track, baseDir string) track.Trac
 			Bitrate:     uint32(t.Bitrate),
 			Tempo:       uint32(t.Tempo * 100),
 			Id:          uint32(lib.Tracks().ID(t)),
-			ArtistId:    uint32(lib.Artists().ID(t.Artist)),
-			AlbumId:     uint32(lib.Albums().ID(t.Album)),
+			ArtistId:    uint32(lib.Artists().ID(lib.Artist(t.Artist))),
+			AlbumId:     uint32(lib.Albums().ID(lib.Album(t.Album))),
 			SampleDepth: uint16(t.SampleDepth),
 			SampleRate:  uint32(t.SampleRate),
 			FileType:    track.FileTypeMP3,
 		},
 		AnalyzeDate: time.Now().Format(isoDateFormat),
-		FilePath:    t.Path[len(baseDir):],
+		FilePath:    filePath,
 		DateAdded:   t.AddedDate.Format(isoDateFormat),
 		Filename:    filepath.Base(t.Path),
 		Title:       t.Title,
@@ -141,5 +242,20 @@ func PdbAlbum(lib *library.Library, a *library.Album) album.Album {
 		Id:       uint32(lib.Albums().ID(a)),
 		ArtistId: 0, // FIXME: multiple artist albums with ID 0, otherwise get ref?
 		Name:     a.Title,
+	}
+}
+
+func FileTypeFromString(t string) (track.FileType, error) {
+	switch t {
+	case "mp3":
+		return track.FileTypeMP3, nil
+	case "aac":
+		return track.FileTypeM4A, nil
+	case "wav":
+		return track.FileTypeWAV, nil
+	case "flac":
+		return track.FileTypeFLAC, nil
+	default:
+		return track.FileTypeUnknown, fmt.Errorf("unimplemented file format '%s'", t)
 	}
 }

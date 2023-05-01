@@ -45,10 +45,11 @@ type Track struct {
 type FileType uint16
 
 const (
-	FileTypeMP3  FileType = 0x1
-	FileTypeM4A  FileType = 0x4
-	FileTypeFLAC FileType = 0x5
-	FileTypeWAV  FileType = 0xb
+	FileTypeUnknown FileType = 0
+	FileTypeMP3     FileType = 0x1
+	FileTypeM4A     FileType = 0x4
+	FileTypeFLAC    FileType = 0x5
+	FileTypeWAV     FileType = 0xb
 )
 
 // All numerical values go here.

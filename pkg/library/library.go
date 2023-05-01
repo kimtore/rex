@@ -15,22 +15,26 @@ type TrackInput struct {
 
 type Track struct {
 	Path        string
+	OutputPath  string
 	Title       string
 	SampleRate  float64
 	FileSize    int
 	Bitrate     int
 	TrackNumber int
 	DiscNumber  int
+	FileType    string
 	Tempo       float64
 	ReleaseDate *time.Time
-	AddedDate   time.Time
+	AddedDate   *time.Time
 	SampleDepth int
 	Duration    time.Duration
 	Isrc        string
+	Artist      string
+	Album       string
 
 	// Foreign keys
-	Artist *Artist
-	Album  *Album
+	// Artist *Artist
+	// Album  *Album
 	// ArtworkId        uint32
 	// KeyId            uint32
 	// OriginalArtistId uint32
@@ -109,6 +113,10 @@ func (library *Library) Artists() *Collection[*Artist] {
 
 func (library *Library) Tracks() *Collection[*Track] {
 	return library.tracks
+}
+
+func (library *Library) Playlists() *Collection[*Playlist] {
+	return library.playlists
 }
 
 func (library *Library) Artist(name string) *Artist {

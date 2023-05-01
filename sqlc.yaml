@@ -1,0 +1,17 @@
+version: 2
+sql:
+  - engine: "sqlite"
+    schema: "pkg/mixxx/schema.sql"
+    queries: "pkg/mixxx/query.sql"
+    gen:
+      go:
+        package: "mixxx"
+        out: "pkg/mixxx"
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        rename:
+          library: Track
+        overrides:
+          - db_type: "library"
+            go_type:
+              type: "Track"
