@@ -164,61 +164,59 @@ func (q *Queries) ListPlaylists(ctx context.Context) ([]Playlist, error) {
 }
 
 const listTracks = `-- name: ListTracks :many
-SELECT library.id, library.artist, library.title, library.album, library.year, library.genre, library.tracknumber, library.location, library.comment, library.url, library.duration, library.bitrate, library.samplerate, library.cuepoint, library.bpm, library.wavesummaryhex, library.channels, library.datetime_added, library.mixxx_deleted, library.played, library.header_parsed, library.filetype, library.replaygain, library.timesplayed, library.rating, library."key", library.beats, library.beats_version, library.composer, library.bpm_lock, library.beats_sub_version, library.keys, library.keys_version, library.keys_sub_version, library.key_id, library.grouping, library.album_artist, library.coverart_source, library.coverart_type, library.coverart_location, library.coverart_hash, library.replaygain_peak, library.tracktotal, library.color, library.last_played_at, library.source_synchronized_ms, tl.location AS path, tl.filesize AS filesize
+SELECT library.id, library.artist, library.title, library.album, library.year, library.genre, library.tracknumber, library.location, library.comment, library.url, library.duration, library.bitrate, library.samplerate, library.cuepoint, library.bpm, library.wavesummaryhex, library.channels, library.datetime_added, library.mixxx_deleted, library.played, library.header_parsed, library.filetype, library.replaygain, library.timesplayed, library.rating, library."key", library.beats, library.beats_version, library.composer, library.bpm_lock, library.beats_sub_version, library.keys, library.keys_version, library.keys_sub_version, library.key_id, library.grouping, library.album_artist, library.coverart_source, library.coverart_type, library.coverart_location, library.coverart_hash, library.replaygain_peak, library.tracktotal, library.color, tl.location AS path, tl.filesize AS filesize
 FROM library
 JOIN track_locations tl on library.location = tl.id
 ORDER BY library.id
 `
 
 type ListTracksRow struct {
-	ID                   int64
-	Artist               sql.NullString
-	Title                sql.NullString
-	Album                sql.NullString
-	Year                 sql.NullString
-	Genre                sql.NullString
-	Tracknumber          sql.NullString
-	Location             sql.NullInt64
-	Comment              sql.NullString
-	Url                  sql.NullString
-	Duration             sql.NullFloat64
-	Bitrate              sql.NullInt64
-	Samplerate           sql.NullInt64
-	Cuepoint             sql.NullInt64
-	Bpm                  sql.NullFloat64
-	Wavesummaryhex       []byte
-	Channels             sql.NullInt64
-	DatetimeAdded        sql.NullString
-	MixxxDeleted         sql.NullInt64
-	Played               sql.NullInt64
-	HeaderParsed         sql.NullInt64
-	Filetype             sql.NullString
-	Replaygain           sql.NullFloat64
-	Timesplayed          sql.NullInt64
-	Rating               sql.NullInt64
-	Key                  sql.NullString
-	Beats                []byte
-	BeatsVersion         sql.NullString
-	Composer             sql.NullString
-	BpmLock              sql.NullInt64
-	BeatsSubVersion      sql.NullString
-	Keys                 []byte
-	KeysVersion          sql.NullString
-	KeysSubVersion       sql.NullString
-	KeyID                sql.NullInt64
-	Grouping             sql.NullString
-	AlbumArtist          sql.NullString
-	CoverartSource       sql.NullInt64
-	CoverartType         sql.NullInt64
-	CoverartLocation     sql.NullString
-	CoverartHash         sql.NullInt64
-	ReplaygainPeak       sql.NullFloat64
-	Tracktotal           sql.NullString
-	Color                sql.NullInt64
-	LastPlayedAt         sql.NullTime
-	SourceSynchronizedMs sql.NullInt64
-	Path                 sql.NullString
-	Filesize             sql.NullInt64
+	ID               int64
+	Artist           sql.NullString
+	Title            sql.NullString
+	Album            sql.NullString
+	Year             sql.NullString
+	Genre            sql.NullString
+	Tracknumber      sql.NullString
+	Location         sql.NullInt64
+	Comment          sql.NullString
+	Url              sql.NullString
+	Duration         sql.NullFloat64
+	Bitrate          sql.NullInt64
+	Samplerate       sql.NullInt64
+	Cuepoint         sql.NullInt64
+	Bpm              sql.NullFloat64
+	Wavesummaryhex   []byte
+	Channels         sql.NullInt64
+	DatetimeAdded    sql.NullString
+	MixxxDeleted     sql.NullInt64
+	Played           sql.NullInt64
+	HeaderParsed     sql.NullInt64
+	Filetype         sql.NullString
+	Replaygain       sql.NullFloat64
+	Timesplayed      sql.NullInt64
+	Rating           sql.NullInt64
+	Key              sql.NullString
+	Beats            []byte
+	BeatsVersion     sql.NullString
+	Composer         sql.NullString
+	BpmLock          sql.NullInt64
+	BeatsSubVersion  sql.NullString
+	Keys             []byte
+	KeysVersion      sql.NullString
+	KeysSubVersion   sql.NullString
+	KeyID            sql.NullInt64
+	Grouping         sql.NullString
+	AlbumArtist      sql.NullString
+	CoverartSource   sql.NullInt64
+	CoverartType     sql.NullInt64
+	CoverartLocation sql.NullString
+	CoverartHash     sql.NullInt64
+	ReplaygainPeak   sql.NullFloat64
+	Tracktotal       sql.NullString
+	Color            sql.NullInt64
+	Path             sql.NullString
+	Filesize         sql.NullInt64
 }
 
 func (q *Queries) ListTracks(ctx context.Context) ([]ListTracksRow, error) {
@@ -275,8 +273,6 @@ func (q *Queries) ListTracks(ctx context.Context) ([]ListTracksRow, error) {
 			&i.ReplaygainPeak,
 			&i.Tracktotal,
 			&i.Color,
-			&i.LastPlayedAt,
-			&i.SourceSynchronizedMs,
 			&i.Path,
 			&i.Filesize,
 		); err != nil {
