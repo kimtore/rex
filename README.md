@@ -28,6 +28,13 @@ Your results may vary.
 
 REX requires FFMPEG to transcode audio files.
 
+## Formatting USB sticks
+
+On Linux, the following command has been reported to create FAT32 file systems that work on Pioneer:
+```
+mkfs.fat -c -F 32 -n label -S 512 /dev/sdX
+```
+
 ## Generate exports
 
 This software has been tested successfully with Go 1.20.
