@@ -13,7 +13,8 @@ CREATE TABLE library
     duration          float,
     bitrate           integer,
     samplerate        integer,
-    cuepoint          integer,
+    -- https://github.com/ambientsound/rex/issues/3
+    --cuepoint          integer,
     bpm               float,
     wavesummaryhex    blob,
     channels          integer,
